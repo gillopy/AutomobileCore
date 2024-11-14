@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import re
 
 def calculate_na_statistics(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -36,3 +37,71 @@ def detect_outliers_iqr(data):
     upper_bound = Q3 + 1.5 * IQR
     # Return True for outliers
     return (data < lower_bound) | (data > upper_bound)
+
+def calcular_estadisticas(column, data):
+    """
+    Calcula estadísticas descriptivas para una columna numérica,
+    omitiendo los valores nulos.
+
+    Parámetros:
+    - column (str): Nombre de la columna.
+    - data (pd.Series): Serie de pandas con los datos de la columna.
+
+    Retorna:
+    - dict: Diccionario con las estadísticas calculadas.
+    """
+    estadisticas = {
+        'Cuenta': int(np.sum(~np.isnan(data))),
+        'Media': np.nanmean(data),
+        'Mediana': np.nanmedian(data),
+        'Desviación Estándar': np.nanstd(data, ddof=1),
+        'Mínimo': np.nanmin(data),
+        'Máximo': np.nanmax(data),
+        '25% Percentil': np.nanpercentile(data, 25),
+        '75% Percentil': np.nanpercentile(data, 75)
+    }
+    return estadisticas
+
+
+#El siguiente codigo es una copia del analisis del Profesor Iker del Bootcamp de Data Science de 2024.
+
+
+def limpiar_cadena(cadena):
+    """
+    Limpia una cadena de texto realizando las siguientes operaciones:
+    1. Convierte todo el texto a minúsculas.
+    2. Elimina caracteres no imprimibles antes de la primera letra y después de la última letra,
+       pero mantiene los caracteres internos.
+    3. Elimina paréntesis y su contenido al final de la cadena.
+    
+    Parámetros:
+    - cadena (str): La cadena de texto a limpiar.
+    
+    Retorna:
+    - str: La cadena limpia.
+    """
+    if isinstance(cadena, str):
+        # 1. Convertir todo a minúsculas
+        cadena = cadena.lower()
+        
+        # 2. Eliminar paréntesis y su contenido al final de la cadena
+        cadena = re.sub(r'\s*\([^)]*\)\s*$', '', cadena)
+        
+        # 3. Eliminar caracteres no imprimibles antes de la primera letra y después de la última letra
+        # Buscar la posición de la primera letra (a-z)
+        primer_letra = re.search(r'[a-z]', cadena)
+        # Buscar la posición de la última letra (a-z)
+        ultima_letra = re.search(r'[a-z](?!.*[a-z])', cadena)
+        
+        if primer_letra and ultima_letra:
+            inicio = primer_letra.start()
+            fin = ultima_letra.end()
+            cadena = cadena[inicio:fin]
+        else:
+            # Si no se encuentran letras, eliminar espacios en blanco
+            cadena = cadena.strip()
+        
+        return cadena
+    return cadena
+
+
